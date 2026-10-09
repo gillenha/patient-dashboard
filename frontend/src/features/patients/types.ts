@@ -1,4 +1,9 @@
 export const PATIENT_STATUSES = ["active", "inactive", "discharged"] as const
+export const STATUS_LABELS: Record<PatientStatus, string> = {
+  active: "Active",
+  inactive: "Inactive",
+  discharged: "Discharged",
+}
 export type PatientStatus = (typeof PATIENT_STATUSES)[number]
 
 export const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const
