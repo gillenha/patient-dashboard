@@ -1,4 +1,6 @@
 import { ArrowLeft } from "lucide-react"
+import { NotesSection } from "@/features/patients/components/NotesSection"
+import { SummaryPanel } from "@/features/patients/components/SummaryPanel"
 import { Link, useLocation, useParams } from "react-router"
 
 import { ErrorState } from "@/features/patients/components/ErrorState"
@@ -44,7 +46,13 @@ function PatientDetail({ id }: { id: number }) {
         />
       )
   } else {
-    content = <PatientProfile patient={data} />
+    content = (
+      <>
+        <PatientProfile patient={data} />
+        <SummaryPanel patientId={id} />
+        <NotesSection patientId={id} />
+      </>
+    )
   }
 
   return (

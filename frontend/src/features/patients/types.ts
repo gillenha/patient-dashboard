@@ -78,3 +78,31 @@ export type PatientStats = {
   seen_last_30_days: number
   average_age: number | null
 }
+
+export type Note = {
+  id: number
+  patient_id: number
+  content: string
+  noted_at: string
+  created_at: string
+}
+
+export type NoteInput = {
+  content: string
+  noted_at?: string // ISO 8601 with offset; omitted means "now" on the server
+}
+
+export type PatientSummary = {
+  patient_id: number
+  first_name: string
+  last_name: string
+  age: number
+  blood_type: string
+  status: Patient["status"]
+  conditions: string[]
+  allergies: string[]
+  last_visit: string | null
+  note_count: number
+  narrative: string
+  generated_by: "template"
+}
