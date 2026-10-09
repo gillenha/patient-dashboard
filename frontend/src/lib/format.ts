@@ -12,6 +12,14 @@ export function formatDate(iso: string | null): string {
   return formatter.format(new Date(y, m - 1, d))
 }
 
+/** Today as a local "YYYY-MM-DD" string. Built from local parts; toISOString() would shift to UTC. */
+export function todayIso(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
   timeStyle: "short",

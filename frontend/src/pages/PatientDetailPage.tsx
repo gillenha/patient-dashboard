@@ -6,23 +6,20 @@ import { Link, useLocation, useParams } from "react-router"
 import { ErrorState } from "@/features/patients/components/ErrorState"
 import { buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PatientActions } from "@/features/patients/components/PatientActions"
+import { PatientNotFound } from "@/features/patients/components/PatientNotFound"
 import { PatientProfile } from "@/features/patients/components/PatientProfile"
 import { readListSearch } from "@/features/patients/listState"
+import { parsePatientId } from "@/features/patients/patientId"
 import { usePatient } from "@/features/patients/queries"
 import { ApiError } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
 import { NotFoundPage } from "./NotFoundPage"
 
-const MAX_ID = 2_147_483_647 // Postgres integer range, matches the API's path validation
-
 export function PatientDetailPage() {
-  const raw = useParams().id ?? ""
-  const id = /^\d+$/.test(raw) ? Number(raw) : NaN
-
-  if (!Number.isInteger(id) || id < 1 || id > MAX_ID) {
-    return <NotFoundPage />
-  }
+  const id = parsePatientId(useParams().id)
+  if (id === null) return <NotFoundPage />
   return <PatientDetail id={id} />
 }
 
@@ -57,10 +54,13 @@ function PatientDetail({ id }: { id: number }) {
 
   return (
     <div className="max-w-4xl space-y-4">
-      <Link to={backTo} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-2")}>
-        <ArrowLeft className="size-4" />
-        Patients
-      </Link>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <Link to={backTo} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-2")}>
+          <ArrowLeft className="size-4" />
+          Patients
+        </Link>
+        {data && <PatientActions patient={data} />}
+      </div>
       {content}
     </div>
   )
@@ -75,17 +75,6 @@ function DetailSkeleton() {
         <Skeleton className="h-48" />
         <Skeleton className="h-48" />
       </div>
-    </div>
-  )
-}
-
-function PatientNotFound({ id }: { id: number }) {
-  return (
-    <div className="flex flex-col items-start gap-1 rounded-lg border border-dashed p-10">
-      <p className="font-medium">Patient not found</p>
-      <p className="text-muted-foreground text-sm">
-        No patient exists with ID {id}. The record may have been deleted.
-      </p>
     </div>
   )
 }

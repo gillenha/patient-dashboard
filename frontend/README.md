@@ -10,7 +10,7 @@ Patient management dashboard for a medical practice: React + TypeScript frontend
 | Backend: patient notes, summary endpoint                                 | Done                                             |
 | Frontend: layout, routing, patient list, patient detail, dashboard stats | Done                                             |
 | Frontend: notes section, summary view                                    | In progress                                      |
-| Frontend: create/edit form                                               | Planned                                          |
+| Frontend: create/edit form, delete                                       | Done                                             |
 | Dockerized backend and frontend                                          | Planned (only the database runs in Docker today) |
 
 ## Stack and rationale
@@ -110,6 +110,17 @@ Conflicts deliberately use the 422 shape so the client has a single path for map
 - **Retry policy.** The client never retries 4xx responses and retries network failures and 5xx at most twice.
 - **Notes carry two timestamps**: `noted_at` (when the clinical event happened, client-supplied, may be backdated, but not in the future) and `created_at` (when the row was written).
 - **Notes are unpaginated.** The spec asks to list all notes, and one patient's notes are a small, bounded set. Add pagination if charts grow into the hundreds.
+
+### Validation
+
+The zod schema in `frontend/src/features/patients/schema.ts` mirrors the rules in `PatientCreate`, so
+the common mistakes are caught before a round trip. The server is still the source of truth: anything
+it rejects comes back as `detail: [{loc, msg, type}]`, and one helper (`serverErrors.ts`) applies each
+entry to the matching field with `setError`. The field name is the first string in `loc` after
+`"body"`, so `["body", "allergies", 3]` and `["body", "email"]` both land on a field. Because the 409
+duplicate email uses the same body shape as a 422, it needs no special case and shows up under the
+email field. Anything not attributable to a field — network failures, 5xx, a 404 from a record
+deleted mid-edit — goes to a form-level banner. No failure clears the user's input.
 
 ### Summary endpoint
 

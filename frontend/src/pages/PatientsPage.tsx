@@ -1,8 +1,10 @@
+import { Plus } from "lucide-react"
 import { useEffect, useRef, type ReactNode } from "react"
+import { Link, useLocation } from "react-router"
 
 import { NativeSelect } from "@/components/NativeSelect"
 import { Pagination } from "@/components/Pagination"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PatientCards } from "@/features/patients/components/PatientCards"
 import { PatientSearch } from "@/features/patients/components/PatientSearch"
@@ -32,6 +34,8 @@ export function PatientsPage() {
   const { params, update } = usePatientListParams()
   const { data, error, isPending, isPlaceholderData, refetch } = usePatients(params)
   const topRef = useRef<HTMLDivElement>(null)
+  // Carried into the form so Cancel returns to this exact list view.
+  const { search } = useLocation()
 
   // Clamp out-of-range pages (e.g. a bookmarked ?page=9 after rows were deleted).
   useEffect(() => {
@@ -93,13 +97,23 @@ export function PatientsPage() {
 
   return (
     <div className="space-y-4">
-      <div ref={topRef} className="flex items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Patients</h1>
-        {data && (
-          <p className="text-muted-foreground text-sm tabular-nums">
-            {data.total} {data.total === 1 ? "patient" : "patients"}
-          </p>
-        )}
+      <div ref={topRef} className="flex flex-wrap items-baseline justify-between gap-3">
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-2xl font-semibold">Patients</h1>
+          {data && (
+            <p className="text-muted-foreground text-sm tabular-nums">
+              {data.total} {data.total === 1 ? "patient" : "patients"}
+            </p>
+          )}
+        </div>
+        <Link
+          to="/patients/new"
+          state={{ listSearch: search }}
+          className={cn(buttonVariants({ size: "lg" }))}
+        >
+          <Plus className="size-4" />
+          New patient
+        </Link>
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row">
