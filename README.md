@@ -9,7 +9,7 @@ Patient management dashboard for a medical practice: React + TypeScript frontend
 | Backend: patients CRUD, search, sort, pagination, stats                  | Done                                             |
 | Backend: patient notes, summary endpoint                                 | Done                                             |
 | Frontend: layout, routing, patient list, patient detail, dashboard stats | Done                                             |
-| Frontend: notes section, summary view                                    | In progress                                      |
+| Frontend: notes section, summary view                                    | Done                                      |
 | Frontend: create/edit form, delete                                       | Done                                             |
 | Dockerized backend and frontend                                          | Planned (only the database runs in Docker today) |
 
