@@ -9,6 +9,7 @@ export const patientKeys = {
   list: (params: PatientListParams) => [...patientKeys.lists(), params] as const,
   details: () => [...patientKeys.all, "detail"] as const,
   detail: (id: number) => [...patientKeys.details(), id] as const,
+  stats: () => [...patientKeys.all, "stats"] as const,
 }
 
 export function usePatients(params: PatientListParams) {
@@ -23,5 +24,12 @@ export function usePatient(id: number) {
   return useQuery({
     queryKey: patientKeys.detail(id),
     queryFn: ({ signal }) => patientsApi.get(id, signal),
+  })
+}
+
+export function usePatientStats() {
+  return useQuery({
+    queryKey: patientKeys.stats(),
+    queryFn: ({ signal }) => patientsApi.stats(signal),
   })
 }

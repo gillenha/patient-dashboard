@@ -1,4 +1,6 @@
+import datetime as dt
 import math
+
 from enum import Enum
 from typing import Annotated
 
@@ -9,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import Patient, PatientStatus
-from app.schemas import PatientCreate, PatientListItem, PatientPage, PatientRead
+from app.schemas import PatientCreate, PatientListItem, PatientPage, PatientRead, PatientStats
 
 router = APIRouter(prefix="/patients", tags=["patients"])
 
@@ -111,6 +113,28 @@ def list_patients(
         page=page,
         page_size=page_size,
         pages=math.ceil(total / page_size),
+    )
+
+
+@router.get("/stats", response_model=PatientStats)
+def patient_stats(db: DbDep) -> PatientStats:
+    counts = {s: 0 for s in PatientStatus}  # zero-fill so every status is always present
+    for status_, n in db.execute(
+        select(Patient.status, func.count()).group_by(Patient.status)
+    ).all():
+        counts[status_] = n
+
+    cutoff = dt.date.today() - dt.timedelta(days=30)
+    recent = db.scalar(
+        select(func.count()).select_from(Patient).where(Patient.last_visit >= cutoff)
+    )
+    avg_age = db.scalar(select(func.avg(func.extract("year", func.age(Patient.date_of_birth)))))
+
+    return PatientStats(
+        total=sum(counts.values()),
+        by_status=counts,
+        seen_last_30_days=recent or 0,
+        average_age=round(float(avg_age), 1) if avg_age is not None else None,
     )
 
 

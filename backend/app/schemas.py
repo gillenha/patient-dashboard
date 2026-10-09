@@ -135,3 +135,9 @@ class PatientPage(BaseModel):
     page: int
     page_size: int
     pages: int
+
+class PatientStats(BaseModel):
+    total: int
+    by_status: dict[PatientStatus, int]
+    seen_last_30_days: int
+    average_age: float | None

@@ -1,6 +1,6 @@
 import { request } from "@/lib/api"
 
-import type { Patient, PatientInput, PatientListParams, PatientPage } from "./types"
+import type { Patient, PatientInput, PatientListParams, PatientPage, PatientStats } from "./types"
 
 export const patientsApi = {
   list: (params: PatientListParams, signal?: AbortSignal) =>
@@ -10,4 +10,5 @@ export const patientsApi = {
   update: (id: number, body: PatientInput) =>
     request<Patient>(`/patients/${id}`, { method: "PUT", body }),
   remove: (id: number) => request<void>(`/patients/${id}`, { method: "DELETE" }),
+  stats: (signal?: AbortSignal) => request<PatientStats>("/patients/stats", { signal }),
 }

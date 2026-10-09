@@ -71,3 +71,10 @@ export type PatientListParams = {
   page?: number
   page_size?: number
 }
+
+export type PatientStats = {
+  total: number
+  by_status: Record<PatientStatus, number>
+  seen_last_30_days: number
+  average_age: number | null
+}
