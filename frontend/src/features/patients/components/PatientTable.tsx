@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
-import { Link } from "react-router"
+import { Link, useLocation } from "react-router"
 
 import {
   Table,
@@ -49,6 +49,7 @@ type Props = {
 
 export function PatientTable({ items, sortBy, order, onSort }: Props) {
   const head = { sortBy, order, onSort }
+  const { search } = useLocation()
   return (
     <div className="hidden rounded-lg border md:block">
       <Table>
@@ -64,7 +65,11 @@ export function PatientTable({ items, sortBy, order, onSort }: Props) {
           {items.map((p) => (
             <TableRow key={p.id}>
               <TableCell>
-                <Link to={`/patients/${p.id}`} className="font-medium hover:underline">
+                <Link
+                  to={`/patients/${p.id}`}
+                  state={{ listSearch: search }}
+                  className="font-medium hover:underline"
+                >
                   {p.last_name}, {p.first_name}
                 </Link>
                 <div className="text-muted-foreground text-xs">{p.email}</div>

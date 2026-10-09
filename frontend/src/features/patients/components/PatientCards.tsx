@@ -1,4 +1,4 @@
-import { Link } from "react-router"
+import { Link, useLocation } from "react-router"
 
 import { formatDate } from "@/lib/format"
 
@@ -6,12 +6,14 @@ import type { PatientListItem } from "../types"
 import { StatusBadge } from "./StatusBadge"
 
 export function PatientCards({ items }: { items: PatientListItem[] }) {
+  const { search } = useLocation()
   return (
     <ul className="space-y-2 md:hidden">
       {items.map((p) => (
         <li key={p.id}>
           <Link
             to={`/patients/${p.id}`}
+            state={{ listSearch: search }}
             className="bg-card hover:bg-muted/50 focus-visible:ring-ring/50 block rounded-lg border p-4 transition-colors focus-visible:ring-[3px] focus-visible:outline-none"
           >
             <div className="flex items-start justify-between gap-3">

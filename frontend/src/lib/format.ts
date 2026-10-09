@@ -11,3 +11,14 @@ export function formatDate(iso: string | null): string {
   if (!y || !m || !d) return iso
   return formatter.format(new Date(y, m - 1, d))
 }
+
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "medium",
+  timeStyle: "short",
+})
+
+/** Formats a full ISO timestamp (with timezone) in the viewer's locale. */
+export function formatDateTime(iso: string): string {
+  const date = new Date(iso)
+  return Number.isNaN(date.getTime()) ? iso : dateTimeFormatter.format(date)
+}

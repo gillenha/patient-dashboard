@@ -15,6 +15,7 @@ import {
   type SortOrder,
 } from "@/features/patients/types"
 import { PAGE_SIZE, usePatientListParams } from "@/features/patients/useListParams"
+import { ErrorState } from "@/features/patients/components/ErrorState"
 import { cn } from "@/lib/utils"
 
 const SORT_OPTIONS = [
@@ -62,6 +63,7 @@ export function PatientsPage() {
   } else if (!data) {
     content = (
       <ErrorState
+        title="Couldn't load patients"
         message={error?.message ?? "Something went wrong."}
         onRetry={() => void refetch()}
       />
@@ -150,21 +152,6 @@ function ListSkeleton() {
       {Array.from({ length: 8 }, (_, i) => (
         <Skeleton key={i} className="h-14 w-full" />
       ))}
-    </div>
-  )
-}
-
-function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div
-      role="alert"
-      className="border-destructive/30 bg-destructive/5 flex flex-col items-start gap-3 rounded-lg border p-6"
-    >
-      <p className="font-medium">Couldn't load patients</p>
-      <p className="text-muted-foreground text-sm">{message}</p>
-      <Button variant="outline" onClick={onRetry}>
-        Try again
-      </Button>
     </div>
   )
 }

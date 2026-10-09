@@ -71,3 +71,10 @@ export default defineConfig([
   },
 ])
 ```
+
+### Pagination
+
+- The server paginates, so the payload is capped at 100 rows (20 by default) no matter how large the table grows.
+- The sort and filter columns are indexed (last_name, status, last_visit).
+- The client renders only one page, so virtualization isn’t needed.
+- TanStack Query cancels stale requests and dedupes identical ones.
