@@ -1,3 +1,4 @@
+from app.routers import patients
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -24,6 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(patients.router)
 
 @app.get("/health")
 def health() -> dict[str, str]:
