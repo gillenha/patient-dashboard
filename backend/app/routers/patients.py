@@ -1,6 +1,5 @@
 import datetime as dt
 import math
-
 from enum import Enum
 from typing import Annotated
 
@@ -10,8 +9,16 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import Patient, PatientStatus
-from app.schemas import PatientCreate, PatientListItem, PatientPage, PatientRead, PatientStats
+from app.models import Patient, PatientNote, PatientStatus
+from app.schemas import (
+    PatientCreate,
+    PatientListItem,
+    PatientPage,
+    PatientRead,
+    PatientStats,
+    PatientSummary,
+)
+from app.summary import build_summary
 
 router = APIRouter(prefix="/patients", tags=["patients"])
 
@@ -141,6 +148,17 @@ def patient_stats(db: DbDep) -> PatientStats:
 @router.get("/{patient_id}", response_model=PatientRead)
 def get_patient(patient_id: PatientId, db: DbDep) -> Patient:
     return _get_or_404(db, patient_id)
+
+
+@router.get("/{patient_id}/summary", response_model=PatientSummary)
+def get_patient_summary(patient_id: PatientId, db: DbDep) -> PatientSummary:
+    patient = _get_or_404(db, patient_id)
+    notes = db.scalars(
+        select(PatientNote)
+        .where(PatientNote.patient_id == patient_id)
+        .order_by(PatientNote.noted_at.desc(), PatientNote.id.desc())
+    ).all()
+    return build_summary(patient, list(notes))
 
 
 @router.post("", response_model=PatientRead, status_code=status.HTTP_201_CREATED)

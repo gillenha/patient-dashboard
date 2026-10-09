@@ -1,7 +1,7 @@
 import datetime as dt
 import enum
 
-from sqlalchemy import CheckConstraint, Date, DateTime, Enum, String, Text, func, text
+from sqlalchemy import CheckConstraint, Date, DateTime, Enum, String, Text, ForeignKey, Index, func, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -84,4 +84,20 @@ class Patient(Base):
     )
     updated_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class PatientNote(Base):
+    __tablename__ = "patient_notes"
+    # Serves both "notes for patient X" and the newest-first ordering.
+    __table_args__ = (Index("ix_patient_notes_patient_id_noted_at", "patient_id", "noted_at"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id", ondelete="CASCADE"))
+    content: Mapped[str] = mapped_column(Text)
+    # When the clinical event happened (client-supplied, defaults to now).
+    noted_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True))
+    # When the row was written. Kept separate so backdated notes stay auditable.
+    created_at: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
     )

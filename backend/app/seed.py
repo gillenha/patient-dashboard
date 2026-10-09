@@ -3,7 +3,7 @@ import datetime as dt
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import BloodType, Patient, PatientStatus
+from app.models import BloodType, Patient, PatientNote, PatientStatus
 
 FIELDS = (
     "first_name", "last_name", "dob", "email", "phone", "address_line1",
@@ -57,4 +57,49 @@ def seed(db: Session) -> None:
                 last_visit=dt.date.fromisoformat(d["last_visit"]),
             )
         )
+    db.commit()
+
+
+# email -> [(days_ago, text)]. Patients not listed get no notes, so the empty state is testable.
+NOTES_BY_EMAIL = {
+    "maria.gonzalez@example.com": [
+        (120, "Quarterly diabetes review. Diet adjustments discussed. Blood pressure borderline."),
+        (60, "Blood pressure rechecked after medication adjustment. Reports good adherence."),
+        (14, "Routine follow-up. Glucose log reviewed, no hypoglycemic episodes. Foot exam normal."),
+    ],
+    "james.whitaker@example.com": [
+        (90, "Asthma control assessment. Occasional nighttime symptoms. Inhaler technique reviewed."),
+        (21, "Follow-up. Symptoms improved on current regimen. Peak flow within expected range."),
+    ],
+    "robert.chen@example.com": [
+        (75, "Atrial fibrillation follow-up. Heart rate controlled. Renal function stable."),
+        (20, "Nephrology labs reviewed. Kidney function unchanged from prior. Sodium and fluid guidance given."),
+    ],
+    "carlos.ramirez@example.com": [
+        (5, "Annual physical. No acute concerns. Ibuprofen intolerance on file; acetaminophen advised for pain."),
+    ],
+    "david.sullivan@example.com": [
+        (30, "COPD exacerbation visit. Treated, symptoms resolved. Pulmonary rehab discussed."),
+        (6, "Post-exacerbation follow-up. Oxygen saturation stable at rest. Heart failure symptoms unchanged."),
+    ],
+}
+
+
+def seed_notes(db: Session) -> None:
+    if db.scalar(select(func.count(PatientNote.id))):
+        return  # idempotent: only seed when there are no notes
+    now = dt.datetime.now(dt.timezone.utc)
+    ids_by_email = {p.email: p.id for p in db.scalars(select(Patient))}
+    for email, notes in NOTES_BY_EMAIL.items():
+        patient_id = ids_by_email.get(email)
+        if patient_id is None:
+            continue
+        for days_ago, text in notes:
+            db.add(
+                PatientNote(
+                    patient_id=patient_id,
+                    content=text,
+                    noted_at=now - dt.timedelta(days=days_ago),
+                )
+            )
     db.commit()

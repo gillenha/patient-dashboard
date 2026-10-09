@@ -1,7 +1,8 @@
 import datetime as dt
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import (
+    AwareDatetime,
     BaseModel,
     ConfigDict,
     EmailStr,
@@ -28,6 +29,7 @@ PostalCode = Annotated[
 Phone = Annotated[
     str, StringConstraints(strip_whitespace=True, pattern=r"^[0-9+()\-.\s]{7,32}$")
 ]
+NoteText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)]
 
 
 def calculate_age(dob: dt.date, today: dt.date | None = None) -> int:
@@ -136,8 +138,49 @@ class PatientPage(BaseModel):
     page_size: int
     pages: int
 
+
 class PatientStats(BaseModel):
     total: int
     by_status: dict[PatientStatus, int]
     seen_last_30_days: int
     average_age: float | None
+
+
+class NoteCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    content: NoteText
+    noted_at: AwareDatetime | None = None  # defaults to now server-side
+
+    @field_validator("noted_at")
+    @classmethod
+    def not_in_future(cls, v: dt.datetime | None) -> dt.datetime | None:
+        # 5 minutes of tolerance for client clock skew.
+        if v is not None and v > dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=5):
+            raise ValueError("Note time cannot be in the future")
+        return v
+
+
+class NoteRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    patient_id: int
+    content: str
+    noted_at: dt.datetime
+    created_at: dt.datetime
+
+
+class PatientSummary(BaseModel):
+    patient_id: int
+    first_name: str
+    last_name: str
+    age: int
+    blood_type: str
+    status: str
+    conditions: list[str]
+    allergies: list[str]
+    last_visit: dt.date | None
+    note_count: int
+    narrative: str
+    generated_by: Literal["template"] = "template"
