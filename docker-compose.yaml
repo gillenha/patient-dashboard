@@ -1,3 +1,5 @@
+name: patient-dashboard
+
 services:
   db:
     image: postgres:17-alpine
@@ -6,14 +8,36 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-patients}
       POSTGRES_DB: ${POSTGRES_DB:-patients}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-patients} -d ${POSTGRES_DB:-patients}"]
       interval: 5s
       timeout: 3s
       retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      # POSTGRES_PASSWORD must be URL-safe: it is interpolated into this URL.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-patients}:${POSTGRES_PASSWORD:-patients}@db:5432/${POSTGRES_DB:-patients}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    restart: unless-stopped
 
 volumes:
   pgdata:
