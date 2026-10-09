@@ -1,8 +1,19 @@
 import { createBrowserRouter } from "react-router"
 
+import { AppLayout } from "@/components/layout/AppLayout"
+import { DashboardPage } from "@/pages/DashboardPage"
+import { NotFoundPage } from "@/pages/NotFoundPage"
+import { PatientDetailPage } from "@/pages/PatientDetailPage"
+import { PatientsPage } from "@/pages/PatientsPage"
+
 export const router = createBrowserRouter([
-  { path: "/", element: <div>Dashboard</div> },
-  { path: "/patients", element: <div>Patient list</div> },
-  { path: "/patients/:id", element: <div>Patient detail</div> },
-  { path: "*", element: <div>404</div> },
+  {
+    element: <AppLayout />,
+    children: [
+      { index: true, element: <DashboardPage /> },
+      { path: "patients", element: <PatientsPage /> },
+      { path: "patients/:id", element: <PatientDetailPage /> },
+      { path: "*", element: <NotFoundPage /> },
+    ],
+  },
 ])
